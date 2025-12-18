@@ -15,7 +15,7 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
-function renderTable(rows, jobName) {
+function renderTable(rows, jobName, basePath = '') {
   const formatHour = (value) => {
     const d = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(d.getTime())) return 'Hora desconocida';
@@ -100,6 +100,7 @@ function renderTable(rows, jobName) {
 
   const html = template
     .replace(/<!--JOB_NAME-->/g, escapeHtml(jobName))
+    .replace(/<!--BASE_PATH-->/g, basePath)
     .replace(
       '<!--TABLE_ROWS-->',
       tableRows || '<tr><td colspan="4">No data</td></tr>'

@@ -6,7 +6,7 @@ Pequeña app en Node 16/Express que expone `/table1` para consultar `JobActivity
 
 Variables de entorno esperadas:
 
-- `DB_SERVER`: host o IP de SQL Server (ej. `192.168.10.80`)
+- `DB_SERVER`: host o IP de SQL Server (ej. `192.168.0.1`)
 - `DB_PORT`: puerto (por defecto `1433`)
 - `DB_USER` / `DB_PASSWORD`: credenciales
 - `DB_NAME`: base de datos

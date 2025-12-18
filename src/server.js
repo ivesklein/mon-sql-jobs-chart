@@ -7,10 +7,11 @@ const { renderTable } = require('./render');
 
 const app = express();
 const port = process.env.PORT || 8090;
+const basePath = process.env.BASE_PATH || '/chart';
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(basePath, express.static(path.join(__dirname, 'public')));
 
-app.get('/table1', async (req, res) => {
+app.get(`${basePath}/table1`, async (req, res) => {
   const jobName = req.query.jobname;
   if (!jobName) {
     return res.status(400).send('Missing required query param: jobname');
@@ -25,15 +26,15 @@ app.get('/table1', async (req, res) => {
       rows = dummyData.filter((row) => row.JobName === jobName);
     }
 
-    res.type('html').send(renderTable(rows, jobName));
+    res.type('html').send(renderTable(rows, jobName, basePath));
   } catch (err) {
     console.error('Error running query', err);
     res.status(500).send('Failed to load job activity data');
   }
 });
 
-app.get('/', (req, res) => {
-  res.redirect('/table1');
+app.get(basePath, (req, res) => {
+  res.redirect(`${basePath}/table1`);
 });
 
 app.listen(port, () => {
