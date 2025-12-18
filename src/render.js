@@ -71,7 +71,7 @@ function renderTable(rows, jobName) {
     .join('\n');
 
   const html = template
-    .replace('<!--JOB_NAME-->', escapeHtml(jobName))
+    .replace(/<!--JOB_NAME-->/g, escapeHtml(jobName))
     .replace(
       '<!--TABLE_ROWS-->',
       tableRows || '<tr><td colspan="4">No data</td></tr>'

@@ -46,6 +46,9 @@ th, td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 th {
   text-align: left;
@@ -79,7 +82,7 @@ tr.error:hover td {
 }
 .wrap {
   max-width: 320px;
-  word-break: break-word;
+  white-space: nowrap;
 }
 .error-cell {
   color: #fecdd3;
