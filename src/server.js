@@ -141,15 +141,18 @@ function renderTable(rows, jobName) {
       groupRows
         .map((row, idx) => {
           const isError = Number(row.ErrorCode) !== 0;
-          let rowsAffectedValue;
+          let rowsAffectedHtml;
           if (isError) {
-            rowsAffectedValue = row.ErrorMessage || 'Error';
+            const message = escapeHtml(row.ErrorMessage || 'Error');
+            rowsAffectedHtml = `
+              <button class="eye-btn" type="button" data-message="${message}" aria-label="Ver error">&#128065;</button>
+            `;
           } else if (Number(row.RowsAffected) === 0) {
-            rowsAffectedValue = '---';
+            rowsAffectedHtml = escapeHtml('---');
           } else {
-            rowsAffectedValue = row.RowsAffected;
+            rowsAffectedHtml = escapeHtml(row.RowsAffected);
           }
-          const rowsAffectedClass = isError ? 'wrap' : 'num';
+          const rowsAffectedClass = isError ? 'wrap error-cell' : 'num';
 
           const timeCell =
             idx === 0
@@ -163,7 +166,7 @@ function renderTable(rows, jobName) {
             ${timeCell}
             <td data-label="StepName">${escapeHtml(row.StepName)}</td>
             <td data-label="DurationMs" class="num">${escapeHtml(row.DurationMs)}</td>
-            <td data-label="RowsAffected" class="${rowsAffectedClass}">${escapeHtml(rowsAffectedValue)}</td>
+            <td data-label="RowsAffected" class="${rowsAffectedClass}">${rowsAffectedHtml}</td>
           </tr>`;
         })
         .join('\n')
@@ -196,7 +199,6 @@ function renderTable(rows, jobName) {
         .card {
           width: min(1200px, 100%);
           background: var(--card);
-          border: 1px solid var(--border);
           border-radius: 0;
           box-shadow: 0 10px 40px rgba(0,0,0,0.25);
           overflow: hidden;
@@ -259,6 +261,69 @@ function renderTable(rows, jobName) {
         }
         .wrap {
           max-width: 320px;
+          word-break: break-word;
+        }
+        .error-cell {
+          color: #fecdd3;
+        }
+        .eye-btn {
+          background: transparent;
+          border: 1px solid var(--border);
+          color: inherit;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .eye-btn:hover {
+          border-color: var(--accent);
+          color: var(--accent);
+        }
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.6);
+          display: none;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+        }
+        .modal {
+          background: var(--card);
+          border: 1px solid var(--border);
+          padding: 20px;
+          max-width: 640px;
+          width: 90%;
+          color: var(--text);
+          box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+        }
+        .modal header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0;
+          background: none;
+          border: 0;
+          margin-bottom: 12px;
+        }
+        .modal h2 {
+          margin: 0;
+          font-size: 16px;
+          letter-spacing: 0.2px;
+        }
+        .close-btn {
+          background: transparent;
+          border: 1px solid var(--border);
+          color: inherit;
+          border-radius: 4px;
+          cursor: pointer;
+          padding: 4px 8px;
+        }
+        .close-btn:hover {
+          border-color: var(--accent);
+          color: var(--accent);
+        }
+        .modal p {
+          margin: 0;
           white-space: pre-wrap;
           word-break: break-word;
         }
@@ -285,7 +350,56 @@ function renderTable(rows, jobName) {
           </table>
         </div>
       </div>
+      <div id="modal-backdrop" class="modal-backdrop" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <header>
+            <h2 id="modal-title">Detalle de error</h2>
+            <button id="modal-close" class="close-btn" type="button">Cerrar</button>
+          </header>
+          <p id="modal-text"></p>
+        </div>
+      </div>
     </body>
+    <script>
+      (() => {
+        const backdrop = document.getElementById('modal-backdrop');
+        const modalText = document.getElementById('modal-text');
+        const closeBtn = document.getElementById('modal-close');
+
+        const closeModal = () => {
+          backdrop.style.display = 'none';
+          backdrop.setAttribute('hidden', '');
+        };
+
+        const openModal = (message) => {
+          modalText.textContent = message || 'Error';
+          backdrop.style.display = 'flex';
+          backdrop.removeAttribute('hidden');
+        };
+
+        document.addEventListener('click', (ev) => {
+          const btn = ev.target.closest('.eye-btn');
+          if (btn) {
+            ev.preventDefault();
+            openModal(btn.getAttribute('data-message') || 'Error');
+            return;
+          }
+          if (ev.target === backdrop) {
+            closeModal();
+            return;
+          }
+          if (ev.target === closeBtn) {
+            closeModal();
+          }
+        });
+
+        document.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Escape') {
+            closeModal();
+          }
+        });
+      })();
+    </script>
   </html>`;
 }
 
