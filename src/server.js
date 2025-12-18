@@ -119,23 +119,54 @@ function escapeHtml(value) {
 }
 
 function renderTable(rows, jobName) {
-  const tableRows = rows
-    .map(
-      (row) => `
-          <tr>
-            <td data-label="LogId">${escapeHtml(row.LogId)}</td>
-            <td data-label="JobName">${escapeHtml(row.JobName)}</td>
+  const formatHour = (value) => {
+    const d = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(d.getTime())) return 'Hora desconocida';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    return `${y}-${m}-${day} ${h}:00`;
+  };
+
+  const grouped = rows.reduce((acc, row) => {
+    const key = formatHour(row.StartTime);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(row);
+    return acc;
+  }, {});
+
+  const tableRows = Object.entries(grouped)
+    .map(([hourLabel, groupRows]) =>
+      groupRows
+        .map((row, idx) => {
+          const isError = Number(row.ErrorCode) !== 0;
+          let rowsAffectedValue;
+          if (isError) {
+            rowsAffectedValue = row.ErrorMessage || 'Error';
+          } else if (Number(row.RowsAffected) === 0) {
+            rowsAffectedValue = '---';
+          } else {
+            rowsAffectedValue = row.RowsAffected;
+          }
+          const rowsAffectedClass = isError ? 'wrap' : 'num';
+
+          const timeCell =
+            idx === 0
+              ? `<td class="time" rowspan="${groupRows.length}" data-label="Time">${escapeHtml(
+                  hourLabel
+                )}</td>`
+              : '';
+
+          return `
+          <tr class="${isError ? 'error' : ''}">
+            ${timeCell}
             <td data-label="StepName">${escapeHtml(row.StepName)}</td>
-            <td data-label="RowsAffected" class="num">${escapeHtml(row.RowsAffected)}</td>
             <td data-label="DurationMs" class="num">${escapeHtml(row.DurationMs)}</td>
-            <td data-label="ErrorCode" class="num">${escapeHtml(row.ErrorCode)}</td>
-            <td data-label="ErrorMessage" class="wrap">${escapeHtml(row.ErrorMessage)}</td>
-            <td data-label="StartTime">${escapeHtml(
-              row.StartTime instanceof Date
-                ? row.StartTime.toISOString()
-                : row.StartTime
-            )}</td>
-          </tr>`
+            <td data-label="RowsAffected" class="${rowsAffectedClass}">${escapeHtml(rowsAffectedValue)}</td>
+          </tr>`;
+        })
+        .join('\n')
     )
     .join('\n');
 
@@ -177,7 +208,7 @@ function renderTable(rows, jobName) {
         header {
           padding: 18px 20px;
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-start;
           align-items: center;
           background: linear-gradient(90deg, rgba(56,189,248,0.15), rgba(99,102,241,0.15));
           border-bottom: 1px solid var(--border);
@@ -186,14 +217,6 @@ function renderTable(rows, jobName) {
           margin: 0;
           font-size: 20px;
           letter-spacing: 0.3px;
-        }
-        .pill {
-          font-size: 12px;
-          color: var(--card);
-          background: var(--accent);
-          padding: 6px 10px;
-          border-radius: 999px;
-          font-weight: 600;
         }
         table {
           width: 100%;
@@ -216,6 +239,19 @@ function renderTable(rows, jobName) {
         }
         tr:hover td {
           background: rgba(56,189,248,0.06);
+        }
+        tr.error td {
+          background: rgba(248, 113, 113, 0.16);
+          color: #fecdd3;
+        }
+        tr.error:hover td {
+          background: rgba(248, 113, 113, 0.24);
+        }
+        .time {
+          background: rgba(255,255,255,0.04);
+          color: var(--muted);
+          font-weight: 600;
+          white-space: nowrap;
         }
         .num {
           text-align: right;
@@ -248,24 +284,19 @@ function renderTable(rows, jobName) {
       <div class="card">
         <header>
           <h1>${escapeHtml(jobName)}</h1>
-          <span class="pill">Job activity log</span>
         </header>
         <div class="table-wrapper">
           <table aria-label="Job activity results">
             <thead>
               <tr>
-                <th>LogId</th>
-                <th>JobName</th>
+                <th>Time</th>
                 <th>StepName</th>
-                <th>RowsAffected</th>
                 <th>DurationMs</th>
-                <th>ErrorCode</th>
-                <th>ErrorMessage</th>
-                <th>StartTime</th>
+                <th>RowsAffected</th>
               </tr>
             </thead>
             <tbody>
-              ${tableRows || '<tr><td colspan="8">No data</td></tr>'}
+              ${tableRows || '<tr><td colspan="4">No data</td></tr>'}
             </tbody>
           </table>
         </div>
@@ -289,7 +320,7 @@ app.get('/table1', async (req, res) => {
         .request()
         .input('jobName', sql.VarChar, jobName)
         .query(
-          `SELECT LogId, JobName, StepName, RowsAffected, DurationMs, ErrorCode, ErrorMessage, StartTime
+          `SELECT StepName, DurationMs, RowsAffected, ErrorCode, ErrorMessage, StartTime
            FROM dbo.JobActivityLog
            WHERE JobName = @jobName
            ORDER BY StartTime DESC;`
