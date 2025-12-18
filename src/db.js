@@ -22,7 +22,7 @@ async function getJobActivity(jobName) {
     .request()
     .input('jobName', sql.VarChar, jobName)
     .query(
-      `SELECT StepName, DurationMs, RowsAffected, ErrorCode, ErrorMessage, StartTime
+      `SELECT TOP 50 StepName, DurationMs, RowsAffected, ErrorCode, ErrorMessage, StartTime
        FROM dbo.JobActivityLog
        WHERE JobName = @jobName
        ORDER BY StartTime DESC;`

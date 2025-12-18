@@ -1,7 +1,7 @@
 module.exports = [
   {
     LogId: 591,
-    JobName: 'Actualiza u_clasificacion SN',
+    JobName: 'Proceso Demo XYZ',
     StepName: 'General Error',
     RowsAffected: null,
     DurationMs: 4236,
@@ -12,7 +12,7 @@ module.exports = [
   },
   {
     LogId: 446,
-    JobName: 'Actualiza u_clasificacion SN',
+    JobName: 'Proceso Demo XYZ',
     StepName: 'Delete registros antiguos',
     RowsAffected: 761,
     DurationMs: 11,
@@ -22,7 +22,7 @@ module.exports = [
   },
   {
     LogId: 444,
-    JobName: 'Actualiza u_clasificacion SN',
+    JobName: 'Proceso Demo XYZ',
     StepName: 'UserSign 187',
     RowsAffected: 0,
     DurationMs: 12447,
@@ -32,7 +32,7 @@ module.exports = [
   },
   {
     LogId: 445,
-    JobName: 'Actualiza u_clasificacion SN',
+    JobName: 'Proceso Demo XYZ',
     StepName: 'GroupCode RETAIL',
     RowsAffected: 362,
     DurationMs: 32739,
@@ -42,7 +42,7 @@ module.exports = [
   },
   {
     LogId: 294,
-    JobName: 'Actualiza u_clasificacion SN',
+    JobName: 'Proceso Demo XYZ',
     StepName: 'Delete registros antiguos',
     RowsAffected: 761,
     DurationMs: 3,
@@ -52,7 +52,7 @@ module.exports = [
   },
   {
     LogId: 292,
-    JobName: 'Actualiza u_clasificacion SN',
+    JobName: 'Proceso Demo XYZ',
     StepName: 'UserSign 187',
     RowsAffected: 0,
     DurationMs: 4998,
@@ -62,7 +62,7 @@ module.exports = [
   },
   {
     LogId: 293,
-    JobName: 'Actualiza u_clasificacion SN',
+    JobName: 'Proceso Demo XYZ',
     StepName: 'GroupCode RETAIL',
     RowsAffected: 30,
     DurationMs: 8677,
