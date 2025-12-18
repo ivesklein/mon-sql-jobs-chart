@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><!--JOB_NAME--> - Job Activity Log</title>
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <div class="card">
+      <header>
+        <h1><!--JOB_NAME--></h1>
+      </header>
+      <div class="table-wrapper">
+        <table aria-label="Job activity results">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>StepName</th>
+              <th>DurationMs</th>
+              <th>RowsAffected</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!--TABLE_ROWS-->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="modal-backdrop" class="modal-backdrop" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <header>
+          <h2 id="modal-title">Detalle de error</h2>
+          <button id="modal-close" class="close-btn" type="button">Cerrar</button>
+        </header>
+        <p id="modal-text"></p>
+      </div>
+    </div>
+  </body>
+  <script>
+    (() => {
+      const backdrop = document.getElementById('modal-backdrop');
+      const modalText = document.getElementById('modal-text');
+      const closeBtn = document.getElementById('modal-close');
+
+      const closeModal = () => {
+        backdrop.style.display = 'none';
+        backdrop.setAttribute('hidden', '');
+      };
+
+      const openModal = (message) => {
+        modalText.textContent = message || 'Error';
+        backdrop.style.display = 'flex';
+        backdrop.removeAttribute('hidden');
+      };
+
+      document.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.eye-btn');
+        if (btn) {
+          ev.preventDefault();
+          openModal(btn.getAttribute('data-message') || 'Error');
+          return;
+        }
+        if (ev.target === backdrop) {
+          closeModal();
+          return;
+        }
+        if (ev.target === closeBtn) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+</html>
