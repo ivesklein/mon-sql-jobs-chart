@@ -6,6 +6,9 @@ const template = fs.readFileSync(
   'utf8'
 );
 
+const timeOffsetMinutes =
+  Number(process.env.TIME_OFFSET_MINUTES || '0') || 0;
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -17,7 +20,10 @@ function escapeHtml(value) {
 
 function renderTable(rows, jobName, basePath = '') {
   const formatHour = (value) => {
-    const d = value instanceof Date ? value : new Date(value);
+    const original = value instanceof Date ? value : new Date(value);
+    const d = Number.isNaN(original?.getTime())
+      ? null
+      : new Date(original.getTime() + timeOffsetMinutes * 60 * 1000);
     if (Number.isNaN(d.getTime())) return 'Hora desconocida';
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -25,6 +31,31 @@ function renderTable(rows, jobName, basePath = '') {
     const h = String(d.getHours()).padStart(2, '0');
     return `${y}-${m}-${day} ${h}:00`;
   };
+
+  const formatDateTime = (value) => {
+    const original = value instanceof Date ? value : new Date(value);
+    const d = Number.isNaN(original?.getTime())
+      ? null
+      : new Date(original.getTime() + timeOffsetMinutes * 60 * 1000);
+    if (Number.isNaN(d?.getTime())) return 'nunca';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${day} ${h}:${min}`;
+  };
+
+  const latestSuccess = rows
+    .filter((row) => Number(row.RowsAffected) > 0)
+    .reduce((latest, row) => {
+      const current = new Date(row.StartTime);
+      if (Number.isNaN(current.getTime())) return latest;
+      if (!latest || current > latest) return current;
+      return latest;
+    }, null);
+
+  const latestLabel = latestSuccess ? formatDateTime(latestSuccess) : 'nunca';
 
   const grouped = rows.reduce((acc, row) => {
     const key = formatHour(row.StartTime);
@@ -100,6 +131,7 @@ function renderTable(rows, jobName, basePath = '') {
 
   const html = template
     .replace(/<!--JOB_NAME-->/g, escapeHtml(jobName))
+    .replace(/<!--LAST_RUN-->/g, escapeHtml(latestLabel))
     .replace(/<!--BASE_PATH-->/g, basePath)
     .replace(
       '<!--TABLE_ROWS-->',

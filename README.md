@@ -11,6 +11,8 @@ Variables de entorno esperadas:
 - `DB_USER` / `DB_PASSWORD`: credenciales
 - `DB_NAME`: base de datos
 - `PORT`: puerto HTTP de la app (por defecto `8090`)
+- `BASE_PATH`: prefijo de ruta para los endpoints (por defecto `/chart`)
+- `TIME_OFFSET_MINUTES`: minutos a sumar al horario mostrado (por defecto `0`, ej. `120` para +2h)
 
 ## Uso
 
