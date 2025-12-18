@@ -192,31 +192,30 @@ function renderTable(rows, jobName) {
           background: radial-gradient(circle at 20% 20%, rgba(56,189,248,0.2), transparent 25%), radial-gradient(circle at 80% 0%, rgba(99,102,241,0.15), transparent 25%), var(--bg);
           color: var(--text);
           min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 24px;
         }
         .card {
           width: min(1200px, 100%);
           background: var(--card);
           border: 1px solid var(--border);
-          border-radius: 14px;
+          border-radius: 0;
           box-shadow: 0 10px 40px rgba(0,0,0,0.25);
           overflow: hidden;
         }
         header {
-          padding: 18px 20px;
+          padding: 0px 12px;
           display: flex;
           justify-content: flex-start;
           align-items: center;
           background: linear-gradient(90deg, rgba(56,189,248,0.15), rgba(99,102,241,0.15));
           border-bottom: 1px solid var(--border);
+          min-height: 42px;
         }
         h1 {
           margin: 0;
-          font-size: 20px;
-          letter-spacing: 0.3px;
+          font-size: 16px;
+          letter-spacing: 0.2px;
+          font-weight: 600;
+          color: var(--text);
         }
         table {
           width: 100%;
@@ -262,21 +261,6 @@ function renderTable(rows, jobName) {
           max-width: 320px;
           white-space: pre-wrap;
           word-break: break-word;
-        }
-        @media (max-width: 768px) {
-          table, thead, tbody, th, td, tr { display: block; }
-          thead { display: none; }
-          tr { border-bottom: 1px solid var(--border); padding: 12px; }
-          td { border: 0; padding: 6px 0; }
-          td::before {
-            content: attr(data-label);
-            display: block;
-            color: var(--muted);
-            font-size: 12px;
-            margin-bottom: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
         }
       </style>
     </head>
