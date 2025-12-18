@@ -80,6 +80,29 @@ tr.error:hover td {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+.meter-cell {
+  position: relative;
+}
+.meter-cell::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  width: var(--pct, 0%);
+  background: linear-gradient(90deg, rgba(56,189,248,0.25), rgba(56,189,248,0.08));
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 0;
+}
+.meter-cell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.meter-cell > * {
+  position: relative;
+  z-index: 2;
+}
 .wrap {
   max-width: 320px;
   white-space: nowrap;

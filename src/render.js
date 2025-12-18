@@ -33,6 +33,22 @@ function renderTable(rows, jobName) {
     return acc;
   }, {});
 
+  const maxDurationByStep = rows.reduce((acc, row) => {
+    const key = row.StepName || 'unknown';
+    const value = Number(row.DurationMs);
+    if (!Number.isFinite(value)) return acc;
+    acc[key] = Math.max(acc[key] || 0, value);
+    return acc;
+  }, {});
+
+  const maxRowsByStep = rows.reduce((acc, row) => {
+    const key = row.StepName || 'unknown';
+    const value = Number(row.RowsAffected);
+    if (!Number.isFinite(value)) return acc;
+    acc[key] = Math.max(acc[key] || 0, value);
+    return acc;
+  }, {});
+
   const tableRows = Object.entries(grouped)
     .map(([hourLabel, groupRows]) =>
       groupRows
@@ -50,6 +66,16 @@ function renderTable(rows, jobName) {
             rowsAffectedHtml = escapeHtml(row.RowsAffected);
           }
           const rowsAffectedClass = isError ? 'wrap error-cell' : 'num';
+          const maxDuration = maxDurationByStep[row.StepName] || 0;
+          const pct =
+            maxDuration > 0
+              ? Math.min(100, Math.max(0, (Number(row.DurationMs) / maxDuration) * 100))
+              : 0;
+          const maxRows = maxRowsByStep[row.StepName] || 0;
+          const pctRows =
+            maxRows > 0
+              ? Math.min(100, Math.max(0, (Number(row.RowsAffected) / maxRows) * 100))
+              : 0;
 
           const timeCell =
             idx === 0
@@ -62,8 +88,10 @@ function renderTable(rows, jobName) {
           <tr class="${isError ? 'error' : ''}">
             ${timeCell}
             <td data-label="StepName">${escapeHtml(row.StepName)}</td>
-            <td data-label="DurationMs" class="num">${escapeHtml(row.DurationMs)}</td>
-            <td data-label="RowsAffected" class="${rowsAffectedClass}">${rowsAffectedHtml}</td>
+            <td data-label="DurationMs" class="num meter-cell" style="--pct:${pct}%;">${escapeHtml(
+              row.DurationMs
+            )}</td>
+            <td data-label="RowsAffected" class="${rowsAffectedClass} meter-cell" style="--pct:${pctRows}%;">${rowsAffectedHtml}</td>
           </tr>`;
         })
         .join('\n')
