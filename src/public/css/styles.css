@@ -10,6 +10,7 @@
 body {
   margin: 0;
   font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: 14px;
   background: radial-gradient(circle at 20% 20%, rgba(56,189,248,0.2), transparent 25%), radial-gradient(circle at 80% 0%, rgba(99,102,241,0.15), transparent 25%), var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -29,11 +30,11 @@ header {
   gap: 12px;
   background: linear-gradient(90deg, rgba(56,189,248,0.15), rgba(99,102,241,0.15));
   border-bottom: 1px solid var(--border);
-  min-height: 42px;
+  min-height: 26px;
 }
 h1 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: 0.2px;
   font-weight: 600;
   color: var(--text);
@@ -47,10 +48,10 @@ h1 {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 12px;
 }
 th, td {
-  padding: 10px 12px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
   white-space: nowrap;
@@ -82,6 +83,10 @@ tr.error:hover td {
   font-weight: 600;
   white-space: nowrap;
 }
+.time.recent {
+  background: rgba(22, 163, 74, 0.2);
+  color: #bbf7d0;
+}
 .num {
   text-align: right;
   white-space: nowrap;
@@ -93,7 +98,7 @@ tr.error:hover td {
 .meter-cell::before {
   content: "";
   position: absolute;
-  inset: 2px;
+  inset: 1px;
   width: var(--pct, 0%);
   background: linear-gradient(90deg, rgba(56,189,248,0.25), rgba(56,189,248,0.08));
   border-radius: 6px;

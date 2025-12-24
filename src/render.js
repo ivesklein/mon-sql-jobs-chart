@@ -18,32 +18,30 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function getAdjustedDate(value) {
+  const original = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(original?.getTime())) return null;
+  return new Date(original.getTime() + timeOffsetMinutes * 60 * 1000);
+}
+
 function renderTable(rows, jobName, basePath = '') {
   const formatHour = (value) => {
-    const original = value instanceof Date ? value : new Date(value);
-    const d = Number.isNaN(original?.getTime())
-      ? null
-      : new Date(original.getTime() + timeOffsetMinutes * 60 * 1000);
-    if (Number.isNaN(d.getTime())) return 'Hora desconocida';
-    const y = d.getFullYear();
+    const d = getAdjustedDate(value);
+    if (!d || Number.isNaN(d.getTime())) return 'Hora desconocida';
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     const h = String(d.getHours()).padStart(2, '0');
-    return `${y}-${m}-${day} ${h}:00`;
+    return `${m}-${day} ${h}:00`;
   };
 
   const formatDateTime = (value) => {
-    const original = value instanceof Date ? value : new Date(value);
-    const d = Number.isNaN(original?.getTime())
-      ? null
-      : new Date(original.getTime() + timeOffsetMinutes * 60 * 1000);
+    const d = getAdjustedDate(value);
     if (Number.isNaN(d?.getTime())) return 'nunca';
-    const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     const h = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
-    return `${y}-${m}-${day} ${h}:${min}`;
+    return `${m}-${day} ${h}:${min}`;
   };
 
   const latestSuccess = rows
@@ -59,10 +57,16 @@ function renderTable(rows, jobName, basePath = '') {
 
   const grouped = rows.reduce((acc, row) => {
     const key = formatHour(row.StartTime);
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(row);
+    const adjustedDate = getAdjustedDate(row.StartTime);
+    if (!acc[key]) acc[key] = { rows: [], date: adjustedDate };
+    acc[key].rows.push(row);
     return acc;
   }, {});
+
+  const now = getAdjustedDate(new Date());
+  const recentCutoff = now
+    ? new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    : null;
 
   const maxDurationByStep = rows.reduce((acc, row) => {
     const key = row.StepName || 'unknown';
@@ -81,8 +85,13 @@ function renderTable(rows, jobName, basePath = '') {
   }, {});
 
   const tableRows = Object.entries(grouped)
-    .map(([hourLabel, groupRows]) =>
-      groupRows
+    .map(([hourLabel, groupData]) => {
+      const groupRows = groupData.rows;
+      const groupDate = groupData.date;
+      const isRecent =
+        groupDate && recentCutoff ? groupDate >= recentCutoff : false;
+
+      return groupRows
         .map((row, idx) => {
           const isError = Number(row.ErrorCode) !== 0;
           let rowsAffectedHtml;
@@ -108,9 +117,12 @@ function renderTable(rows, jobName, basePath = '') {
               ? Math.min(100, Math.max(0, (Number(row.RowsAffected) / maxRows) * 100))
               : 0;
 
+          const timeClasses = ['time'];
+          if (isRecent) timeClasses.push('recent');
+
           const timeCell =
             idx === 0
-              ? `<td class="time" rowspan="${groupRows.length}" data-label="Time">${escapeHtml(
+              ? `<td class="${timeClasses.join(' ')}" rowspan="${groupRows.length}" data-label="Time">${escapeHtml(
                   hourLabel
                 )}</td>`
               : '';
@@ -125,8 +137,8 @@ function renderTable(rows, jobName, basePath = '') {
             <td data-label="RowsAffected" class="${rowsAffectedClass} meter-cell" style="--pct:${pctRows}%;">${rowsAffectedHtml}</td>
           </tr>`;
         })
-        .join('\n')
-    )
+        .join('\n');
+    })
     .join('\n');
 
   const html = template
