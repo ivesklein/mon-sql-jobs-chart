@@ -1,13 +1,30 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const { isDbConfigured, getJobActivity } = require('./db');
+const { isDbConfigured, getJobActivity, getJobErrors } = require('./db');
 const dummyData = require('./dummyData');
-const { renderTable } = require('./render');
+
+const { renderTable, renderTable2 } = require('./render');
 
 const app = express();
 const port = process.env.PORT || 8090;
 const basePath = process.env.BASE_PATH || '/chart';
+
+app.get(`${basePath}/table2`, async (req, res) => {
+  try {
+    let rows = [];
+    if (isDbConfigured()) {
+      rows = await getJobErrors();
+    } else {
+      // Use only dummy rows with JobName/message/RunDateTime fields
+      rows = dummyData.filter(row => row.JobName && row.message && row.RunDateTime);
+    }
+    res.type('html').send(renderTable2(rows, basePath));
+  } catch (err) {
+    console.error('Error running job errors query', err);
+    res.status(500).send('Failed to load job errors data');
+  }
+});
 
 app.use(basePath, express.static(path.join(__dirname, 'public')));
 

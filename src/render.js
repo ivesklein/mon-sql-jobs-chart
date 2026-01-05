@@ -153,6 +153,162 @@ function renderTable(rows, jobName, basePath = '') {
   return html;
 }
 
+
+function renderTable2(rows, basePath = '') {
+  // Simple HTML table for job errors
+  const htmlRows = rows.map(row => `
+    <tr>
+      <td>${escapeHtml(row.JobName)}</td>
+      <td>${escapeHtml(row.message)}</td>
+      <td>${escapeHtml(row.RunDateTime)}</td>
+    </tr>
+  `).join('\n');
+
+  return `
+    <html><head>
+      <title>Errores de Jobs SQL</title>
+      <link rel="stylesheet" href="${basePath}/css/styles.css">
+    </head><body>
+      <div class="card">
+        <header><h1>Errores de Jobs SQL</h1></header>
+        <div class="table-wrapper">
+          <table aria-label="Errores de Jobs SQL">
+            <thead>
+              <tr><th>JobName</th><th>Mensaje</th><th>Fecha/Hora</th></tr>
+            </thead>
+            <tbody>
+              ${htmlRows || '<tr><td colspan="3">No data</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </body></html>
+  `;
+}
+
+  function renderTable2(rows, basePath = '') {
+    // Formato de fecha igual a table1
+    const formatDateTime = (value) => {
+      const d = getAdjustedDate(value);
+      if (Number.isNaN(d?.getTime())) return 'nunca';
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const h = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      return `${m}-${day} ${h}:${min}`;
+    };
+
+    const today = (() => {
+      const d = getAdjustedDate(new Date());
+      return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` : '';
+    })();
+
+    const htmlRows = rows.map(row => {
+      const d = getAdjustedDate(row.RunDateTime);
+      let dateClass = 'time';
+      let dateLabel = '';
+      if (d && !Number.isNaN(d.getTime())) {
+        const rowDay = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        if (rowDay === today) dateClass += ' recent';
+        dateLabel = formatDateTime(row.RunDateTime);
+      } else {
+        dateLabel = 'nunca';
+      }
+      let msg = row.message || '';
+      const prefix = 'Ejecutado como usuario: NT SERVICE\\SQLSERVERAGENT.';
+      if (msg.startsWith(prefix)) {
+        msg = msg.slice(prefix.length).trim();
+      }
+      let displayMsg = msg;
+      if (/interbloqueo/i.test(msg)) {
+        displayMsg = 'Interbloqueo';
+      }
+      // Botón de ojo para mostrar el mensaje completo
+      const eyeBtn = `<button class="eye-btn" type="button" data-message="${escapeHtml(row.message || '')}" aria-label="Ver error">&#128065;</button>`;
+        return `
+          <tr>
+            <td class="${dateClass}" data-label="Fecha/Hora">${escapeHtml(dateLabel)}</td>
+            <td>${escapeHtml(row.JobName)}</td>
+            <td>
+              <span class="msg-truncate">${escapeHtml(displayMsg)}</span> ${eyeBtn}
+            </td>
+          </tr>
+        `;
+    }).join('\n');
+
+    // Modal y script igual que en template.html
+    const modalHtml = `
+      <div id="modal-backdrop" class="modal-backdrop" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <header>
+            <h2 id="modal-title">Detalle de error</h2>
+            <button id="modal-close" class="close-btn" type="button">Cerrar</button>
+          </header>
+          <p id="modal-text"></p>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const backdrop = document.getElementById('modal-backdrop');
+          const modalText = document.getElementById('modal-text');
+          const closeBtn = document.getElementById('modal-close');
+          const closeModal = () => {
+            backdrop.style.display = 'none';
+            backdrop.setAttribute('hidden', '');
+          };
+          const openModal = (message) => {
+            modalText.textContent = message || 'Error';
+            backdrop.style.display = 'flex';
+            backdrop.removeAttribute('hidden');
+          };
+          document.addEventListener('click', (ev) => {
+            const btn = ev.target.closest('.eye-btn');
+            if (btn) {
+              ev.preventDefault();
+              openModal(btn.getAttribute('data-message') || 'Error');
+              return;
+            }
+            if (ev.target === backdrop) {
+              closeModal();
+              return;
+            }
+            if (ev.target === closeBtn) {
+              closeModal();
+            }
+          });
+          document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape') {
+              closeModal();
+            }
+          });
+        })();
+      </script>
+    `;
+
+    return `
+      <html><head>
+        <title>Errores de Jobs SQL</title>
+        <link rel="stylesheet" href="${basePath}/css/styles.css">
+      </head><body>
+        <div class="card">
+          <header><h1>Errores de Jobs SQL</h1></header>
+          <div class="table-wrapper">
+            <table aria-label="Errores de Jobs SQL">
+              <thead>
+                <tr><th>Fecha/Hora</th><th>JobName</th><th>Mensaje</th></tr>
+              </thead>
+              <tbody>
+                ${htmlRows || '<tr><td colspan="3">No data</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        ${modalHtml}
+      </body></html>
+    `;
+  }
+
 module.exports = {
-  renderTable
+  renderTable,
+  renderTable2
 };

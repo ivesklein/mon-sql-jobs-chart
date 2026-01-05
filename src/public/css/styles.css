@@ -22,6 +22,16 @@ body {
   box-shadow: 0 10px 40px rgba(0,0,0,0.25);
   overflow: hidden;
 }
+.msg-truncate {
+  display: inline-block;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 60px;
+  max-width: 60vw;
+  width: clamp(120px, 40vw, 60vw);
+}
 header {
   padding: 0px 12px;
   display: flex;

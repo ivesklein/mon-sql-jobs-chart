@@ -1,4 +1,21 @@
 module.exports = [
+  // Dummy data for table2 (job errors)
+  // Fields: JobName, message, RunDateTime
+  {
+    JobName: 'Inventario_Negativo_Guias',
+    message: "Ejecutado como usuario: NT SERVICE\\SQLSERVERAGENT. El nombre de objeto 'DB..TABLA' no es válido. [SQLSTATE 42S02] (Error 208).  No se pudo realizar el paso.",
+    RunDateTime: '2026-01-04 12:00:00.000'
+  },
+  {
+    JobName: 'Acutlizacion direccion.',
+    message: 'Ejecutado como usuario: NT SERVICE\\SQLSERVERAGENT. La transacción (id. de proceso 152) quedó en interbloqueo en bloqueo | búfer de comunicaciones recursos con otro proceso y fue elegida como sujeto del interbloqueo. Ejecute de nuevo la transacción. [SQLSTATE 40001] (Error 1205).  No se pudo realizar el paso.',
+    RunDateTime: '2026-01-04 15:34:00.000'
+  },
+  {
+    JobName: 'Acutlizacion direccion.',
+    message: 'Ejecutado como usuario: NT SERVICE\\SQLSERVERAGENT. La transacción (id. de proceso 183) quedó en interbloqueo en bloqueo | búfer de comunicaciones recursos con otro proceso y fue elegida como sujeto del interbloqueo. Ejecute de nuevo la transacción. [SQLSTATE 40001] (Error 1205).  No se pudo realizar el paso.',
+    RunDateTime: '2026-01-04 18:34:00.000'
+  },
   {
     LogId: 591,
     JobName: 'Proceso Demo XYZ',
